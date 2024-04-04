@@ -53,9 +53,6 @@
                                 </th>
                                 <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">API
                                 </th>
-                                <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-0">
-                                    <span class="sr-only">Edit</span>
-                                </th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200">
@@ -97,10 +94,12 @@ const handleSelectChange = (selectedTab) => {
     }
 };
 
+const { id } = useRoute().params
+
 const tabs = [
-    { name: 'Settings', href: '/admin/roles/Admin', current: false },
-    { name: 'Permissions', href: '/admin/roles/Admin/permissions', current: true },
-    { name: 'Users', href: '/admin/roles/Admin/users', current: false },
+    { name: 'Settings', href: `/admin/roles/${id}`, current: false },
+    { name: 'Permissions', href: `/admin/roles/${id}/permissions`, current: true },
+    { name: 'Users', href: `/admin/roles/${id}/users`, current: false },
 ];
 
 const isModalOpen = ref(false);

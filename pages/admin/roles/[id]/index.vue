@@ -47,10 +47,12 @@ definePageMeta({
     layout: "admin-roles",
 });
 
+const { id } = useRoute().params
+
 const tabs = [
-    { name: 'Settings', href: '/admin/roles/Admin', current: true },
-    { name: 'Permissions', href: '/admin/roles/Admin/permissions', current: false },
-    { name: 'Users', href: '/admin/roles/Admin/users', current: false },
+    { name: 'Settings', href: `/admin/roles/${id}`, current: true },
+    { name: 'Permissions', href: `/admin/roles/${id}/permissions`, current: false },
+    { name: 'Users', href: `/admin/roles/${id}/users`, current: false },
 ];
 
 const router = useRouter();

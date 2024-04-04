@@ -42,7 +42,6 @@
                                         class="hover:text-indigo-900 border-2 p-2 text-sm font-bold">. . .<span
                                             class="sr-only"></span></NuxtLink>
                                 </td>
-
                             </tr>
                         </tbody>
                     </table>
