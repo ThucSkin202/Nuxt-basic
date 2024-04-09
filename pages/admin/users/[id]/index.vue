@@ -20,26 +20,20 @@
         </div>
     </div>
 
-
-
-    <div v-for="user in user_detail" :key="user.email" class="border-2 p-7">
-        <div class="flex gap-4 justify-between mb-5 items-center">
-            <div>Name <p>{{ user.name }}</p>
-                <button>Edit</button>
-            </div>
-            <div>Email <p>{{ user.email }}</p>
-                <button>Edit</button>
-            </div>
-            <div>Signed up <p>{{ user.signed_up }}</p>
-            </div>
+    <div v-for="user in user_detail" :key="user.email" class="grid grid-cols-3 gap-6 border-2 p-7 rounded-md">
+        <div>Name <p>{{ user.name }}</p>
+            <button class="text-blue-700">Edit</button>
         </div>
-        <div class="flex gap-4 justify-between items-center mb-5">
-            <div>Primary Identify Provider <p>{{ user.provider }}</p>
-            </div>
-            <div>Lasted Login <p>{{ user.lasted_login }}</p>
-            </div>
-            <div>Accounts Associated <p>{{ user.Acc_Associated }}</p>
-            </div>
+        <div>Email <p>{{ user.email }}</p>
+            <button class="text-blue-700">Edit</button>
+        </div>
+        <div>Signed up <p>{{ user.signed_up }}</p>
+        </div>
+        <div>Primary Identify Provider <p>{{ user.provider }}</p>
+        </div>
+        <div>Lasted Login <p>{{ user.lasted_login }}</p>
+        </div>
+        <div>Accounts Associated <p>{{ user.Acc_Associated }}</p>
         </div>
         <div>Browser <p>{{ user.browser }}</p>
         </div>

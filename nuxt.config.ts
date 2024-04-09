@@ -1,4 +1,3 @@
-// https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   devtools: { enabled: true },
   css: ["~/assets/css/main.css"],
@@ -8,7 +7,26 @@ export default defineNuxtConfig({
       autoprefixer: {},
     },
   },
-  modules: ["nuxt-icon"],
+  modules: [
+    'nuxt-icon',
+    ['@pinia/nuxt', {
+      autoImports: ['defineStore']
+    }]
+  ],
+  imports: {
+    dirs: ['./store']
+  },
+  // server config variable
+  runtimeConfig: {
+    MONGO_URI: process.env.MONGO_URI,
+  },
+  // register nitro plugin
+  nitro: {
+    plugins: ["@/server/db/index.ts"],
+  },
+
+
+
   app: {
     head: {
       title: "Nuxt dojo",

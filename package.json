@@ -11,9 +11,18 @@
   },
   "dependencies": {
     "@nuxt/ui": "^2.15.0",
+    "@pinia/nuxt": "^0.5.1",
     "nuxt": "^3.11.1",
+    "pinia": "^2.1.7",
     "vue": "^3.4.21",
-    "vue-router": "^4.3.0"
+    "vue-router": "^4.3.0",
+    "vee-validate": "^4.12.6",
+    "vue-toastification": "next",
+    "vue3-easy-data-table": "^1.5.47",
+    "@vee-validate/rules": "^4.12.6",
+    "dayjs": "^1.11.10",
+    "joi": "^17.12.2",
+    "mongoose": "^8.2.3"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.19",

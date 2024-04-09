@@ -1,8 +1,10 @@
 <template>
+  <NuxtLoadingIndicator />
   <NuxtLayout>
     <NuxtPage />
   </NuxtLayout>
 </template>
+
 
 <style scoped>
 .layout-enter-active,
@@ -13,5 +15,15 @@
 .layout-enter-from,
 .layout-leave-to {
   filter: grayscale(1);
+}
+
+img {
+  width: 200px;
+}
+
+button,
+input {
+  margin-right: 0.5rem;
+  margin-bottom: 0.5rem;
 }
 </style>
