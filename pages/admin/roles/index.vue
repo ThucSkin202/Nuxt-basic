@@ -52,10 +52,13 @@
 </template>
 
 <script setup>
+
+import isLoggedOut from '~/middleware/isLoggedOut';
+
 definePageMeta({
     layout: "admin",
-});
-
+    middleware: isLoggedOut,
+})
 const roles = [
     { name: 'Admin', description: 'Quản lý hệ thống' },
     { name: 'Manager', description: 'Quản lý khu vực' },
@@ -74,4 +77,7 @@ const closeModal = () => {
 const handleOpenModal = () => {
     openModal()
 }
+
+const roleIdAdmin = ref('661c91249e8e16a32504ebf6')
+const roleIdManager = ref('6615215d7e6b08ed157785f0')
 </script>

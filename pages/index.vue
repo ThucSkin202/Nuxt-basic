@@ -1,6 +1,14 @@
 <template>
   <div>
-    <h1 class="text-blue-800">Home page</h1>
-
+    <h1>Trang chủ</h1>
   </div>
 </template>
+
+<script setup>
+
+
+definePageMeta({
+  middleware: 'is-logged-out'
+})
+
+</script>

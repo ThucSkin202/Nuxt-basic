@@ -16,14 +16,14 @@ export default defineNuxtConfig({
   imports: {
     dirs: ['./store']
   },
-  // server config variable
-  runtimeConfig: {
-    MONGO_URI: process.env.MONGO_URI,
-  },
-  // register nitro plugin
-  nitro: {
-    plugins: ["@/server/db/index.ts"],
-  },
+
+
+  // runtimeConfig: {
+  //   MONGO_URI: process.env.MONGO_URI,
+  // },
+  // nitro: {
+  //   plugins: ["@/server/db/index.ts"],
+  // },
 
 
 

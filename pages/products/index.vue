@@ -8,12 +8,12 @@
 </template>
 
 <script setup>
+import isLoggedOut from '~/middleware/isLoggedOut';
+
 definePageMeta({
   layout: "products",
+  middleware: isLoggedOut,
 });
 
-//fetch the products
 const { data: products } = await useFetch('https://fakestoreapi.com/products')
-
-
 </script>

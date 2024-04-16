@@ -6,20 +6,22 @@
             class="absolute right-0 z-10 mt-2 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
             <div class="py-1">
                 <MenuItem v-slot="{ active }">
-                <NuxtLink :href="`/admin/users/${cleanUsername}`"
+                <NuxtLink :to="`/admin/users/${id}`"
                     :class="[active ? 'bg-gray-100 text-gray-900' : 'text-gray-700', 'block px-4 py-2 text-sm']">View
                     Details</NuxtLink>
                 </MenuItem>
             </div>
             <div class="py-1">
                 <MenuItem v-slot="{ active }">
-                <a href="#"
-                    :class="[active ? 'bg-gray-100 text-gray-900' : 'text-gray-700', 'px-4 py-2 text-sm flex items-center gap-3',]">
+                <div @click="showModal = true"
+                    :class="[active ? 'bg-gray-100 text-gray-900 cursor-pointer' : 'text-gray-700', 'px-4 py-2 text-sm flex items-center gap-3',]">
                     <Icon name="icon-park-twotone:people-bottom" />
                     <p>Assign
                         Roles</p>
-                </a>
+                </div>
                 </MenuItem>
+            </div>
+            <div class="py-1">
                 <MenuItem v-slot="{ active }">
                 <a href="#"
                     :class="[active ? 'bg-gray-100 text-gray-900' : 'text-gray-700', 'flex items-center gap-3 px-4 py-2 text-sm']">
@@ -54,20 +56,31 @@
                 </a>
                 </MenuItem>
                 <MenuItem v-slot="{ active }">
-                <a href="#"
-                    :class="[active ? 'bg-gray-100 text-gray-900' : 'text-gray-700', 'text-red-700 flex items-center gap-3 px-4 py-2 text-sm']">
+                <div @click="deleteUser"
+                    :class="[active ? 'bg-gray-100 text-gray-900 cursor-pointer' : 'text-gray-700', 'text-red-700 flex items-center gap-3 px-4 py-2 text-sm']">
                     <Icon name="solar:trash-bin-2-linear" />Delete
-                </a>
+                </div>
                 </MenuItem>
             </div>
         </MenuItems>
     </transition>
+    <!-- Modal Component -->
+    <Admin-UserAssignRoleModal v-if="showModal" @close="showModal = false" :id="id" />
 </template>
 
 <script>
 import { MenuItems, MenuItem } from '@headlessui/vue'
+import { useRouter } from 'vue-router';
 
 export default {
+    data() {
+        return {
+            showModal: false
+        };
+    },
+    showModal() {
+        this.showModal = true;
+    },
     components: {
         MenuItems,
         MenuItem
@@ -76,11 +89,28 @@ export default {
         username: {
             type: String,
             required: true
+        },
+        id: {
+            type: String,
+            required: true
+        },
+    },
+    methods: {
+        async deleteUser() {
+            try {
+                const userId = this.id;
+                const authStore = useAuthStore();
+                await authStore.handleDeleteUser(userId);
+                await authStore.getAllUsers();
+                const router = useRouter();
+                router.push('/admin/users');
+            } catch (error) {
+                console.error('Lỗi khi xóa người dùng:', error);
+            }
         }
     },
     computed: {
         cleanUsername() {
-            // Kiểm tra xem username có chứa '@gmail.com' không và loại bỏ nếu có
             return this.username.includes('@gmail.com', '@email.com') ? this.username.replace('@gmail.com', '') : this.username;
         }
     }

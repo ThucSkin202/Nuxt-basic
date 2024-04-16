@@ -5,9 +5,10 @@
                 <p class="mt-2 text-2xl font-bold">Users</p>
             </div>
             <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
-                <button type="button"
+                <button type="button" @click="handleOpenModal"
                     class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">+
                     Create User</button>
+                <Admin-UserAddNewModal :closeModal="closeModal" v-if="isModalOpen" @close="closeModal" />
             </div>
         </div>
         <p class="mt-5">An easy to use UI to help administrators manager user identities including password resets,
@@ -52,6 +53,9 @@
                                     Name
                                 </th>
                                 <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                                    Roles
+                                </th>
+                                <!-- <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
                                     Connection
                                 </th>
                                 <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
@@ -59,36 +63,37 @@
                                 </th>
                                 <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
                                     Lasted Login
-                                </th>
+                                </th> -->
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200">
-                            <tr v-for="user in users" :key="user.email">
+                            <tr v-for="user in users" :key="user._id">
                                 <td class="border-b-2 whitespace-nowrap py-5 pl-4 pr-3 text-sm sm:pl-0">
                                     <div class="flex items-center">
-                                        <div class="h-11 w-11 flex-shrink-0 sm:ml-5">
-                                            <img class="h-11 w-11 rounded-full" :src="user.image" alt="" />
+                                        <div class="h-14 w-14 sm:ml-5 rounded-full overflow-hidden">
+                                            <img class="h-full w-full object-cover"
+                                                src="https://cdnphoto.dantri.com.vn/Im0W2Oa59BulrmFjQo1dOsDcBZY=/thumb_w/990/2021/10/30/trang-nhungdocx-1635528230350.jpeg"
+                                                alt="Description of the image" />
                                         </div>
                                         <div class="ml-4">
-                                            <NuxtLink to="#" class="mt-1 text-blue-500 font-medium">{{ user.email }}
-                                            </NuxtLink>
-                                            <div class="font-medium text-gray-900">{{ user.name }}</div>
+                                            <NuxtLink :to="`/admin/users/${user._id}`"
+                                                class="mt-1 text-blue-500 font-medium">{{ user._id }}</NuxtLink>
+                                            <div class="font-medium text-gray-900">{{ user.username }}</div>
                                         </div>
                                     </div>
                                 </td>
-                                <td class="pl-4 border-b-2">{{ user.connection }}</td>
-                                <td class="pl-4 border-b-2">{{ user.logins }}</td>
-                                <td class="pl-4 border-b-2">{{ user.lasted_login }}</td>
+                                <td class="pl-4 border-b-2">{{ user.roles }}</td>
+                                <!-- <td class="pl-4 border-b-2">{{ user.logins }}</td>
+                                <td class="pl-4 border-b-2">{{ user.lasted_login }}</td> -->
                                 <td
                                     class="relative whitespace-nowrap py-4 text-sm font-medium sm:pr-0 border-b-2 rounded-s-lg">
                                     <Menu as="div" class="relative inline-block text-left">
                                         <div>
                                             <MenuButton class=" border-2 p-2 rounded-md text-sm font-bold">
                                                 . . .
-                                                <ChevronDownIcon class="h-5 w-5 text-gray-400" aria-hidden="true" />
                                             </MenuButton>
                                         </div>
-                                        <Admin-UserDropdown :username="user.name" />
+                                        <Admin-UserDropdown :username="user.username" :id="user._id" />
                                     </Menu>
                                 </td>
                             </tr>
@@ -106,36 +111,22 @@ definePageMeta({
     layout: "admin",
 });
 
-const users = [
-    {
-        email: 'thucskin@gmail.com',
-        name: 'thucskin@gmail.com',
-        connection: 'Username-Password-Authentication',
-        logins: '22',
-        lasted_login: '7 days ago',
-        image:
-            'https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-    },
-    {
-        email: 'lindsay@gmail.com',
-        name: 'lindsay@gmail.com',
-        connection: 'google-oauth2',
-        logins: '10',
-        lasted_login: '12 days ago',
-        image:
-            'https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-    },
-    {
-        email: 'lindsay@gmail.com',
-        name: 'lindsay@gmail.com',
-        connection: 'Username-Password-Authentication',
-        logins: '22',
-        lasted_login: '7 days ago',
-        image:
-            'https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-    },
-    // More people...
-]
+const authStore = useAuthStore();
+const users = ref([]);
+
+const fetchUsers = async () => {
+    try {
+        await authStore.getAllUsers();
+        const { dataUser } = authStore;
+        if (dataUser && dataUser.length > 0) {
+            users.value = dataUser;
+        }
+    } catch (error) {
+        console.error('Lỗi khi lấy dữ liệu người dùng:', error);
+    }
+};
+
+fetchUsers();
 
 const isModalOpen = ref(false)
 

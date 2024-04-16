@@ -1,6 +1,6 @@
 <template>
-    <div class="mt-7">
-        <!-- Tab navigation -->
+    <div class="p-7">
+        <Admin-RoleHeader />
         <div class="border-b border-gray-200 pb-5 sm:pb-0 mb-4">
             <div class="mt-3 sm:mt-4">
                 <div class="sm:hidden">
@@ -43,37 +43,54 @@
                     <table class="min-w-full divide-y divide-gray-300">
                         <thead>
                             <tr>
+                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
+                                    Name
+                                </th>
                                 <th scope="col"
                                     class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-5">
-                                    Permissions
+                                    Feature
                                     <Icon name="ep:arrow-up" />
                                 </th>
                                 <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                                    Description
+                                    Permissions
                                 </th>
                                 <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">API
                                 </th>
                             </tr>
                         </thead>
+
                         <tbody class="divide-y divide-gray-200">
-                            <tr v-for="(per, index) in permissions" :key="index">
+                            <tr v-for="(permission, index) in permissionsData" :key="index">
+                                <template v-if="index === 0">
+                                    <td class="border-b-2 whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-500 sm:pl-5"
+                                        :rowspan="permissionsData.length">
+                                        <div class="inline-block bg-gray-200 rounded-md p-1.5">{{ roleData.name }}</div>
+                                    </td>
+                                </template>
                                 <td
                                     class="border-b-2 whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-500 sm:pl-5">
-                                    <div class="inline-block bg-gray-200 rounded-md p-1.5">{{ per.name }}</div>
+                                    <div class="inline-block bg-gray-200 rounded-md p-1.5">{{ permission.feature }}
+                                    </div>
                                 </td>
-                                <td class="border-b-2 whitespace-nowrap px-3 py-4 text-sm">{{ per.title }}</td>
-                                <td class="border-b-2 whitespace-nowrap px-3 py-4 text-sm">{{ per.api }}</td>
-                                <td class="border-b-2">
-                                    <router-link :to="'/admin/permissions/' + per.id"
-                                        class="flex items-center justify-center">
-                                        <div class="text-center border-2 rounded-md p-1.5 hover:text-indigo-900">
-                                            <Icon name="ic:baseline-delete-outline" />
-                                        </div>
-                                    </router-link>
-                                </td>
+                                <td class="border-b-2 whitespace-nowrap px-3 py-4 text-sm">{{ permission.actions }}</td>
+                                <template v-if="index === 0">
+                                    <td class="border-b-2 whitespace-nowrap px-3 py-4 text-sm"
+                                        :rowspan="permissionsData.length">
+                                        {{ roleData.description }}
+                                    </td>
+                                    <td class="border-b-2" :rowspan="permissionsData.length">
+                                        <router-link :to="'/admin/permissions/' + roleData._id"
+                                            class="flex items-center justify-center">
+                                            <div class="text-center border-2 rounded-md p-1.5 hover:text-indigo-900">
+                                                <Icon name="ic:baseline-delete-outline" />
+                                            </div>
+                                        </router-link>
+                                    </td>
+                                </template>
                             </tr>
                         </tbody>
                     </table>
+                    <td class="mt-10 text-lg text-red-600 font-semibold flex justify-center">{{ errMsg }}</td>
                 </div>
             </div>
         </div>
@@ -81,8 +98,10 @@
 </template>
 
 <script setup>
+import { errorMessages } from 'vue/compiler-sfc';
+
 definePageMeta({
-    layout: "admin-roles",
+    layout: "admin",
 });
 
 const router = useRouter();
@@ -94,7 +113,49 @@ const handleSelectChange = (selectedTab) => {
     }
 };
 
-const { id } = useRoute().params
+const { id } = useRoute().params;
+
+const roleData = ref([]);
+const permissionsData = ref([]);
+const errMsg = ref();
+
+const roleIdAdmin = ref("661c91249e8e16a32504ebf6");
+const roleIdManager = ref("6615215d7e6b08ed157785f0");
+const roleIdRef = id === 'Admin' ? roleIdAdmin : roleIdManager;
+
+
+const getRoleById = async () => {
+    try {
+        if (!roleIdRef.value) {
+            console.log('roleId is required');
+            return;
+        }
+
+        const token = localStorage.getItem('token');
+
+        const res = await fetch(`https://laco-auth.10z.one/roles/${roleIdRef.value}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            },
+        });
+
+        if (res.ok) {
+            const data = await res.json();
+            roleData.value = data.data;
+            permissionsData.value = data.data.permissions;
+        } else {
+            errMsg.value = 'Unauthorized';
+            const errorText = await res.text();
+            console.error('Failed to fetch role:', errorText);
+        }
+    } catch (error) {
+        console.error('Lỗi kết nối:', error);
+    }
+}
+
+getRoleById()
 
 const tabs = [
     { name: 'Settings', href: `/admin/roles/${id}`, current: false },
@@ -115,10 +176,4 @@ const closeModal = () => {
 const handleOpenModal = () => {
     openModal();
 };
-
-const permissions = [
-    { id: 1, name: 'read : drivers', title: 'Read Drivers', api: 'API Admin' },
-    { id: 2, name: 'read : locations', title: 'Read Locations', api: 'API Merchants' },
-];
-
 </script>

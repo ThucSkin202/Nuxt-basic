@@ -8,11 +8,33 @@
                     <li><nuxt-link to="/admin/roles">Roles</nuxt-link></li>
                     <li><nuxt-link to="/admin/permissions">Permissions</nuxt-link></li>
                     <li><nuxt-link to="/admin/users">Users</nuxt-link></li>
+                    <template v-if="authStore.isLoggedIn">
+                        <button class="ml-4" @click="handleLogout">Logout</button>
+                    </template>
                 </ul>
             </nav>
         </header>
         <slot />
     </div>
 </template>
+
+<script setup>
+import { useAuthStore } from '@/store/auth';
+import { useRouter } from 'vue-router';
+
+const authStore = useAuthStore();
+const router = useRouter();
+
+const handleLogout = () => {
+    try {
+        authStore.logout()
+        router.push('/login');
+
+    } catch (error) {
+        console.error('Logout error:', error);
+    }
+};
+
+</script>
 
 <style scoped></style>

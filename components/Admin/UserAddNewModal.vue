@@ -16,53 +16,65 @@
                         <DialogPanel
                             class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
                             <div class="absolute right-0 top-0 hidden pr-4 pt-4 sm:block">
-                                <button type="button"
+                                <!-- <button type="button"
                                     class="flex items-center justify-center w-7 h-7 rounded-full bg-gray-100 p-1 text-gray-400 hover:text-gray-500"
-                                    @click="closeModal" @close="closeModal">
+                                    @click="closeModal">
                                     <span class="text-xl">x</span>
-                                </button>
+                                </button> -->
                             </div>
                             <div class="sm:flex sm:items-start">
                                 <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
                                     <DialogTitle as="h3" class="text-xl font-semibold leading-6 text-gray-900">
-                                        New Role
+                                        New User
                                     </DialogTitle>
                                 </div>
                             </div>
                             <div class="mt-5">
-                                <label for="name" class="block text-sm font-medium leading-6 text-gray-900">Name
-                                    *</label>
+                                <label for="name" class="block text-sm font-medium leading-6 text-gray-900">Username
+                                    <label class="text-red-500">*</label></label>
                                 <div class="relative mt-2 rounded-md shadow-sm">
-                                    <input type="text" name="name" id="name"
-                                        class="block w-full rounded-md border-0 pl-3 py-1.5 pr-10 text-red-900 ring-1 ring-inset ring-red-300 placeholder:text-red-300 focus:ring-2 focus:ring-inset focus:ring-red-500 sm:text-sm sm:leading-6"
+                                    <input v-model="username" type="text" name="username" id="username"
+                                        class="block w-full rounded-md border-0 pl-3 py-1.5 pr-10  ring-1 ring-insetsm:text-sm sm:leading-6"
                                         aria-invalid="true" aria-describedby="name-error" />
                                     <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
                                         <ExclamationCircleIcon class="h-5 w-5 text-red-500" aria-hidden="true" />
                                     </div>
                                 </div>
-                                <p class="mt-2 text-sm text-red-600" id="email-error">Not a valid email address.
-                                </p>
+
                             </div>
                             <div class="mt-5">
                                 <label for="description"
-                                    class="block text-sm font-medium leading-6 text-gray-900">Description
-                                    *</label>
+                                    class="block text-sm font-medium leading-6 text-gray-900">Password
+                                    <label class="text-red-500">*</label></label>
                                 <div class="relative mt-2 rounded-md shadow-sm">
-                                    <input type="text" name="description" id="description"
-                                        class="block w-full rounded-md border-0 pl-3 py-1.5 pr-10 text-red-900 ring-1 ring-inset ring-red-300 placeholder:text-red-300 focus:ring-2 focus:ring-inset focus:ring-red-500 sm:text-sm sm:leading-6"
+                                    <input v-model="password" type="password" name="password" id="description"
+                                        class="block w-full rounded-md border-0 pl-3 py-1.5 pr-10  ring-1 ring-insetsm:text-sm sm:leading-6"
                                         aria-invalid="true" aria-describedby="name-error" />
                                     <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
                                         <ExclamationCircleIcon class="h-5 w-5 text-red-500" aria-hidden="true" />
                                     </div>
                                 </div>
-                                <p class="mt-2 text-sm text-red-600" id="email-error">Not a valid description.
-                                </p>
+                            </div>
+                            <div class="mt-5">
+                                <label for="description"
+                                    class="block text-sm font-medium leading-6 text-gray-900">Confirm Password
+                                    <label class="text-red-500">*</label></label>
+                                <div class="relative mt-2 rounded-md shadow-sm">
+                                    <input v-model="confirmPassword" type="password" name="confirmPassword"
+                                        id="description"
+                                        class="block w-full rounded-md border-0 pl-3 py-1.5 pr-10  ring-1 ring-insetsm:text-sm sm:leading-6"
+                                        aria-invalid="true" aria-describedby="name-error" />
+                                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                                        <ExclamationCircleIcon class="h-5 w-5 text-red-500" aria-hidden="true" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div v-if="authStore.errorMessage" class="text-red-500 mt-4">{{ authStore.errorMessage }}
                             </div>
                             <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
-                                <button
-                                    class="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 sm:ml-3 sm:w-auto"
-                                    @click="closeModal">
-                                    Deactivate
+                                <button @click="hanldeCreateUser"
+                                    class="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 sm:ml-3 sm:w-auto">
+                                    Create
                                 </button>
                                 <button
                                     class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
@@ -80,6 +92,28 @@
 </template>
 
 <script setup>
+const authStore = useAuthStore();
+
+const username = ref('');
+const password = ref('');
+const confirmPassword = ref('');
+
+const hanldeCreateUser = async () => {
+    try {
+        if (password.value !== confirmPassword.value) {
+            authStore.errorMessage = 'Mật khẩu không trùng khớp';
+            return;
+        }
+
+        await authStore.register(username.value, password.value);
+
+    } catch (error) {
+        console.error('Lỗi đăng ký:', error);
+        authStore.errorMessage = 'Lỗi kết nối';
+    }
+}
+
+
 import { ref } from 'vue'
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue'
 

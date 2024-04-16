@@ -1,6 +1,6 @@
 <template>
-    <div class="">
-        <!-- Tab navigation -->
+    <div class="p-7">
+        <Admin-RoleHeader />
         <div class="border-b border-gray-200 pb-5 sm:pb-0">
             <div class="mt-3 sm:mt-4">
                 <div class="sm:hidden">
@@ -44,7 +44,7 @@
 <script setup>
 
 definePageMeta({
-    layout: "admin-roles",
+    layout: "admin",
 });
 
 const { id } = useRoute().params

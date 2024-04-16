@@ -1,6 +1,6 @@
 <template>
-    <div class="mt-7">
-        <!-- Tab navigation -->
+    <div class="p-7">
+        <Admin-RoleHeader />
         <div class="border-b border-gray-200 pb-5 sm:pb-0 mb-4">
             <div class="mt-3 sm:mt-4">
                 <div class="sm:hidden">
@@ -49,16 +49,18 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200 bg-white">
-                            <tr v-for="user in users" :key="user.email">
+                            <tr v-for="user in userData" :key="user._id">
                                 <td class="border-b-2 whitespace-nowrap py-5 pl-4 pr-3 text-sm sm:pl-0">
                                     <div class="flex items-center">
-                                        <div class="h-11 w-11 flex-shrink-0 sm:ml-5">
-                                            <img class="h-11 w-11 rounded-full" :src="user.image" alt="" />
+                                        <div class="h-14 w-14 sm:ml-5 rounded-full overflow-hidden">
+                                            <img class="h-full w-full object-cover"
+                                                src="https://cdnphoto.dantri.com.vn/Im0W2Oa59BulrmFjQo1dOsDcBZY=/thumb_w/990/2021/10/30/trang-nhungdocx-1635528230350.jpeg"
+                                                alt="Description of the image" />
                                         </div>
                                         <div class="ml-4">
-                                            <NuxtLink to="#" class="mt-1 text-blue-500 font-medium">{{ user.email }}
+                                            <NuxtLink to="#" class="mt-1 text-blue-500 font-medium">{{ user._id }}
                                             </NuxtLink>
-                                            <div class="font-medium text-gray-900">{{ user.name }}</div>
+                                            <div class="font-medium text-gray-900">{{ user.username }}</div>
                                         </div>
                                     </div>
                                 </td>
@@ -80,10 +82,51 @@
 
 <script setup>
 definePageMeta({
-    layout: "admin-roles",
+    layout: "admin",
 });
 
-const { id } = useRoute().params
+const { id } = useRoute().params;
+
+const roleIdAdmin = ref("661c91249e8e16a32504ebf6");
+const roleIdManager = ref("6615215d7e6b08ed157785f0");
+const roleIdRef = id === 'Admin' ? roleIdAdmin : roleIdManager;
+
+const userData = ref([]);
+const errMsg = ref();
+
+const getRoleById = async () => {
+    try {
+        if (!roleIdRef.value) {
+            console.log('roleId is required');
+            return;
+        }
+
+        const token = localStorage.getItem('token');
+
+        const res = await fetch(`https://laco-auth.10z.one/roles/${roleIdRef.value}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            },
+        });
+
+        if (res.ok) {
+            const data = await res.json();
+            userData.value = data.data.users;
+        } else {
+            errMsg.value = 'Unauthorized';
+            const errorText = await res.text();
+            console.error('Failed to fetch role:', errorText);
+        }
+    } catch (error) {
+        console.error('Lỗi kết nối:', error);
+    }
+}
+
+getRoleById()
+
+
 
 const tabs = [
     { name: 'Settings', href: `/admin/roles/${id}`, current: false },
