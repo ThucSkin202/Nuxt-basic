@@ -44,49 +44,27 @@
                         <thead>
                             <tr>
                                 <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                                    Name
+                                    Feature
                                 </th>
                                 <th scope="col"
                                     class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-5">
-                                    Feature
-                                    <Icon name="ep:arrow-up" />
-                                </th>
-                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                                    Permissions
-                                </th>
-                                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">API
+                                    Actions
                                 </th>
                             </tr>
                         </thead>
-
                         <tbody class="divide-y divide-gray-200">
                             <tr v-for="(permission, index) in permissionsData" :key="index">
-                                <template v-if="index === 0">
-                                    <td class="border-b-2 whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-500 sm:pl-5"
-                                        :rowspan="permissionsData.length">
-                                        <div class="inline-block bg-gray-200 rounded-md p-1.5">{{ roleData.name }}</div>
-                                    </td>
-                                </template>
                                 <td
                                     class="border-b-2 whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-500 sm:pl-5">
-                                    <div class="inline-block bg-gray-200 rounded-md p-1.5">{{ permission.feature }}
+                                    <div class="inline-block rounded-md p-1.5">{{ permission.feature }}
                                     </div>
                                 </td>
-                                <td class="border-b-2 whitespace-nowrap px-3 py-4 text-sm">{{ permission.actions }}</td>
-                                <template v-if="index === 0">
-                                    <td class="border-b-2 whitespace-nowrap px-3 py-4 text-sm"
-                                        :rowspan="permissionsData.length">
-                                        {{ roleData.description }}
-                                    </td>
-                                    <td class="border-b-2" :rowspan="permissionsData.length">
-                                        <router-link :to="'/admin/permissions/' + roleData._id"
-                                            class="flex items-center justify-center">
-                                            <div class="text-center border-2 rounded-md p-1.5 hover:text-indigo-900">
-                                                <Icon name="ic:baseline-delete-outline" />
-                                            </div>
-                                        </router-link>
-                                    </td>
-                                </template>
+                                <td class="border-b-2 whitespace-nowrap px-3 py-4 text-sm">
+                                    <ul class="flex flex-wrap gap-7">
+                                        <li v-for="(action, actionIndex) in permission.actions" :key="actionIndex"
+                                            class="bg-gray-200 rounded-md p-1.5">{{ action }}</li>
+                                    </ul>
+                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -98,70 +76,43 @@
 </template>
 
 <script setup>
-import { errorMessages } from 'vue/compiler-sfc';
-
 definePageMeta({
     layout: "admin",
 });
-
+import { useAuthStore } from '~/store/auth';
+const authStore = useAuthStore();
+const { id } = useRoute().params;
 const router = useRouter();
 
-const handleSelectChange = (selectedTab) => {
-    const tab = tabs.find(tab => tab.name === selectedTab);
-    if (tab && tab.href) {
-        router.push(tab.href);
-    }
-};
-
-const { id } = useRoute().params;
-
-const roleData = ref([]);
 const permissionsData = ref([]);
 const errMsg = ref();
 
-const roleIdAdmin = ref("661c91249e8e16a32504ebf6");
-const roleIdManager = ref("6615215d7e6b08ed157785f0");
-const roleIdRef = id === 'Admin' ? roleIdAdmin : roleIdManager;
-
-
-const getRoleById = async () => {
+const fetchRoleDetail = async (roleId) => {
     try {
-        if (!roleIdRef.value) {
-            console.log('roleId is required');
-            return;
-        }
+        await authStore.getRoleById(roleId);
 
-        const token = localStorage.getItem('token');
-
-        const res = await fetch(`https://laco-auth.10z.one/roles/${roleIdRef.value}`, {
-            method: 'GET',
-            headers: {
-                'Authorization': 'Bearer ' + token,
-                'Content-Type': 'application/json'
-            },
-        });
-
-        if (res.ok) {
-            const data = await res.json();
-            roleData.value = data.data;
-            permissionsData.value = data.data.permissions;
+        if (authStore.rolePermissions) {
+            permissionsData.value = authStore.rolePermissions;
         } else {
-            errMsg.value = 'Unauthorized';
-            const errorText = await res.text();
-            console.error('Failed to fetch role:', errorText);
+            errMsg.value = "Authorization";
         }
     } catch (error) {
-        console.error('Lỗi kết nối:', error);
+        console.error('Lỗi khi lấy dữ liệu vai trò:', error);
     }
 }
-
-getRoleById()
+fetchRoleDetail(id);
 
 const tabs = [
     { name: 'Settings', href: `/admin/roles/${id}`, current: false },
     { name: 'Permissions', href: `/admin/roles/${id}/permissions`, current: true },
     { name: 'Users', href: `/admin/roles/${id}/users`, current: false },
 ];
+const handleSelectChange = (selectedTab) => {
+    const tab = tabs.find(tab => tab.name === selectedTab);
+    if (tab && tab.href) {
+        router.push(tab.href);
+    }
+};
 
 const isModalOpen = ref(false);
 

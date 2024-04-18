@@ -74,6 +74,7 @@
                             </tr>
                         </tbody>
                     </table>
+                    <div class="text-center text-red-500 mt-10">{{ errMsg }}</div>
                 </div>
             </div>
         </div>
@@ -85,47 +86,27 @@ definePageMeta({
     layout: "admin",
 });
 
+import { useAuthStore } from '~/store/auth';
+const authStore = useAuthStore();
 const { id } = useRoute().params;
-
-const roleIdAdmin = ref("661c91249e8e16a32504ebf6");
-const roleIdManager = ref("6615215d7e6b08ed157785f0");
-const roleIdRef = id === 'Admin' ? roleIdAdmin : roleIdManager;
 
 const userData = ref([]);
 const errMsg = ref();
 
-const getRoleById = async () => {
+const fetchRoleDetail = async (roleId) => {
     try {
-        if (!roleIdRef.value) {
-            console.log('roleId is required');
-            return;
-        }
+        await authStore.getRoleById(roleId);
 
-        const token = localStorage.getItem('token');
-
-        const res = await fetch(`https://laco-auth.10z.one/roles/${roleIdRef.value}`, {
-            method: 'GET',
-            headers: {
-                'Authorization': 'Bearer ' + token,
-                'Content-Type': 'application/json'
-            },
-        });
-
-        if (res.ok) {
-            const data = await res.json();
-            userData.value = data.data.users;
+        if (authStore.roleUsers.length > 0) {
+            userData.value = authStore.roleUsers;
         } else {
-            errMsg.value = 'Unauthorized';
-            const errorText = await res.text();
-            console.error('Failed to fetch role:', errorText);
+            errMsg.value = "No users using this role";
         }
     } catch (error) {
-        console.error('Lỗi kết nối:', error);
+        console.error('Lỗi khi lấy dữ liệu vai trò:', error);
     }
 }
-
-getRoleById()
-
+fetchRoleDetail(id);
 
 
 const tabs = [

@@ -25,16 +25,17 @@
             <label for="name" class="block text-sm font-medium leading-6 text-gray-900">Name <label
                     class="text-red-600">*</label></label>
             <div class="mt-2 mb-6">
-                <input type="name" name="name" id="name"
-                    class="block w-full sm:w-7/12 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
+                <input type="name" name="name" id="name" v-model="name"
+                    class="block w-full sm:w-7/12 rounded-md border-0 py-1.5 text-gray-900 pl-5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset  sm:text-sm sm:leading-6" />
             </div>
             <label for="description" class="block text-sm font-medium leading-6 text-gray-900">Description <label
                     class="text-red-600">*</label></label>
             <div class="mt-2">
-                <input type="description" name="description" id="description"
-                    class="block w-full sm:w-7/12 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
+                <input type="description" name="description" id="description" v-model="description"
+                    class="block w-full sm:w-7/12 rounded-md border-0 py-1.5 text-gray-900 pl-5 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset  sm:text-sm sm:leading-6" />
             </div>
-            <button type="button"
+            <div class="text-red-500 text-left ml-20 mt-5">{{ errMsg }}</div>
+            <button type="button" @click="updateRole"
                 class="rounded-md bg-indigo-600 mt-6 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Save</button>
         </div>
 
@@ -42,12 +43,78 @@
 </template>
 
 <script setup>
-
 definePageMeta({
     layout: "admin",
 });
 
-const { id } = useRoute().params
+const authStore = useAuthStore();
+const { id } = useRoute().params;
+
+const roleDetails = ref([]);
+const errMsg = ref();
+const name = ref();
+const description = ref();
+
+const fetchRoleDetail = async (roleId) => {
+    try {
+        await authStore.getRoleById(roleId);
+
+        if (authStore.roleDetails) {
+            roleDetails.value = authStore.roleDetails;
+            name.value = authStore.roleDetails.name;
+            description.value = authStore.roleDetails.description;
+        } else {
+            errMsg.value = "Authorization";
+        }
+    } catch (error) {
+        console.error('Lỗi khi lấy dữ liệu vai trò:', error);
+    }
+}
+fetchRoleDetail(id);
+
+const updateRole = async () => {
+    try {
+        const token = localStorage.getItem("token");
+
+        const res = await fetch(`https://laco-auth.10z.one/roles/${id}`, {
+            method: "PATCH",
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                name: name.value,
+                description: description.value,
+                permissions: [
+                    {
+                        "feature": "user",
+                        "actions": [
+                            "read",
+                            "create",
+                            "update",
+                            "delete"
+                        ],
+                        "description": "roles user",
+                        "_id": "661bf3169e8e16a32504e92c"
+                    }
+                ]
+            })
+        });
+
+        if (res.ok) {
+            errMsg.value = 'Updated role successfully';
+            fetchRoleDetail(id);
+        } else {
+            const msg = await res.json()
+            errMsg.value = 'Faid to update role: ' + msg.message[0];
+        }
+    } catch (error) {
+        console.error('Lỗi kết nối:', error);
+        errMsg.value = 'Lỗi kết nối';
+    }
+}
+
+
 
 const tabs = [
     { name: 'Settings', href: `/admin/roles/${id}`, current: true },

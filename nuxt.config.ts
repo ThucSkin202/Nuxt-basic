@@ -18,18 +18,9 @@ export default defineNuxtConfig({
   },
 
 
-  // runtimeConfig: {
-  //   MONGO_URI: process.env.MONGO_URI,
-  // },
-  // nitro: {
-  //   plugins: ["@/server/db/index.ts"],
-  // },
-
-
-
   app: {
     head: {
-      title: "Nuxt dojo",
+      title: "Nuxt basic",
       meta: [{ name: "title", content: "Nuxt 3" }],
       link: [
         {

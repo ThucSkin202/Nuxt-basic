@@ -6,7 +6,16 @@ export const useAuthStore = defineStore('auth', {
         errorMessage: null,
         isLoggedIn: false,
 
-        dataUser: [],
+        userData: [],
+        userTotal: 0,
+
+        roleData: [],
+        roleTotal: 0,
+
+        roleDetails: [],
+        rolePermissions: [],
+        roleUsers: [],
+        roleName: null,
     }),
     actions: {
         async login(username, password) {
@@ -66,18 +75,31 @@ export const useAuthStore = defineStore('auth', {
             }
         },
 
-        async getAllUsers() {
+        async getAllUsers(limit, page) {
             try {
-                const response = await fetch('https://laco-auth.10z.one/users');
+                const token = localStorage.getItem("token");
+                if (!token) {
+                    throw new Error('Token không tồn tại');
+                }
+
+                const url = `https://laco-auth.10z.one/users?limit=${limit}&page=${page}`;
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
                 if (!response.ok) {
                     throw new Error('Không thể lấy dữ liệu người dùng');
                 }
 
                 const data = await response.json();
-                this.dataUser = data.data;
+                this.userData = data.data.users;
+                this.userTotal = data.data.total;
 
                 this.errorMessage = null;
-                this.isLoggedIn = true;
+
             } catch (error) {
                 console.error('Lỗi khi lấy dữ liệu người dùng:', error);
                 return null;
@@ -109,6 +131,129 @@ export const useAuthStore = defineStore('auth', {
                 console.error('Lỗi khi xóa người dùng:', error);
             }
         },
+
+        //roles
+        async getAllRoles(limit, page) {
+            try {
+                const token = localStorage.getItem("token");
+                if (!token) {
+                    throw new Error('Token không tồn tại');
+                }
+
+                const url = `https://laco-auth.10z.one/roles?limit=${limit}&page=${page}`;
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Không tìm thấy vai trò người dùng');
+                }
+
+                const data = await response.json();
+                this.roleData = data.data.roles;
+                this.roleTotal = data.data.total;
+
+                this.roleName = data.data.roles.name;
+
+                this.errorMessage = null;
+                this.isLoggedIn = true;
+
+            } catch (error) {
+                console.error('Lỗi khi lấy dữ liệu người dùng:', error);
+                return null;
+            }
+        },
+
+        async getRoleById(id) {
+            try {
+                const token = localStorage.getItem("token");
+                if (!token) {
+                    throw new Error('Token không tồn tại');
+                }
+
+                const url = `https://laco-auth.10z.one/roles/${id}`;
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Không tìm thấy vai trò người dùng');
+                }
+
+                const data = await response.json();
+                this.roleDetails = data.data;
+                this.rolePermissions = data.data.permissions;
+                this.roleUsers = data.data.users;
+
+                this.errorMessage = null;
+                this.isLoggedIn = true;
+
+            } catch (error) {
+                console.error('Lỗi khi lấy dữ liệu người dùng:', error);
+                return null;
+            }
+        },
+
+        async createRoles(name, description) {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    throw new Error('Token không tồn tại');
+                }
+
+                await this.getAllRoles();
+
+                const roleNameExists = this.roleData.some(role => role.name === name);
+                if (roleNameExists) {
+                    this.errorMessage = 'Name role already exists.';
+                    return;
+                }
+
+                const response = await fetch('https://laco-auth.10z.one/roles', {
+                    method: 'POST',
+                    headers: {
+                        Authorization: 'Bearer ' + token,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name,
+                        description,
+                        permissions: [
+                            {
+                                "feature": "user",
+                                "actions": [
+                                    "read",
+                                    "create",
+                                    "update",
+                                    "delete"
+                                ],
+                                "description": "roles user",
+                                "_id": "661bf3169e8e16a32504e92c"
+                            }
+                        ]
+                    }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    this.errorMessage = 'Add new role successfully';
+                } else {
+                    const errorMessage = data && data.message ? data.message : 'Lỗi không xác định';
+                    this.errorMessage = errorMessage;
+                }
+            } catch (error) {
+                console.error('Lỗi đăng ký:', error);
+                this.errorMessage = 'Lôi kết nối: ', + error.message;
+            }
+        },
+
 
         logout() {
             this.accessToken = null;

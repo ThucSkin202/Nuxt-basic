@@ -16,7 +16,6 @@ export function useAuthUtils() {
 
     const handleLogout = () => {
         try {
-            // Xử lý logic logout ở đây
             localStorage.removeItem('token');
             router.push('/login');
         } catch (error) {

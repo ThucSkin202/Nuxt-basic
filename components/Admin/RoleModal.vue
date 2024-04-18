@@ -31,45 +31,35 @@
                             </div>
                             <div class="mt-5">
                                 <label for="name" class="block text-sm font-medium leading-6 text-gray-900">Name
-                                    *</label>
+                                    <label class="text-red-500">*</label></label>
                                 <div class="relative mt-2 rounded-md shadow-sm">
-                                    <input type="text" name="name" id="name"
-                                        class="block w-full rounded-md border-0 pl-3 py-1.5 pr-10 text-red-900 ring-1 ring-inset ring-red-300 placeholder:text-red-300 focus:ring-2 focus:ring-inset focus:ring-red-500 sm:text-sm sm:leading-6"
+                                    <input type="text" name="name" id="name" v-model="name"
+                                        class="block w-full rounded-md border-0 pl-3 py-1.5 pr-10 text-back-900 ring-1 ring-inset focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6"
                                         aria-invalid="true" aria-describedby="name-error" />
-                                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                                        <ExclamationCircleIcon class="h-5 w-5 text-red-500" aria-hidden="true" />
-                                    </div>
                                 </div>
-                                <p class="mt-2 text-sm text-red-600" id="email-error">Not a valid email address.
-                                </p>
                             </div>
                             <div class="mt-5">
                                 <label for="description"
                                     class="block text-sm font-medium leading-6 text-gray-900">Description
-                                    *</label>
+                                    <label class="text-red-500">*</label></label>
                                 <div class="relative mt-2 rounded-md shadow-sm">
-                                    <input type="text" name="description" id="description"
-                                        class="block w-full rounded-md border-0 pl-3 py-1.5 pr-10 text-red-900 ring-1 ring-inset ring-red-300 placeholder:text-red-300 focus:ring-2 focus:ring-inset focus:ring-red-500 sm:text-sm sm:leading-6"
-                                        aria-invalid="true" aria-describedby="name-error" />
-                                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                                        <ExclamationCircleIcon class="h-5 w-5 text-red-500" aria-hidden="true" />
-                                    </div>
+                                    <input type="text" name="description" id="description" v-model="description"
+                                        class="block w-full rounded-md border-0 pl-3 py-1.5 pr-10 text-back-900 ring-1 ring-inset focus:ring-2 focus:ring-inset sm:text-sm sm:leading-6"
+                                        aria-invalid=" true" aria-describedby="name-error" />
                                 </div>
-                                <p class="mt-2 text-sm text-red-600" id="email-error">Not a valid description.
-                                </p>
                             </div>
+                            <div class="text-center text-red-500 my-5">{{ errMsg }}</div>
                             <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
                                 <button
-                                    class="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 sm:ml-3 sm:w-auto"
-                                    @click="closeModal">
-                                    Deactivate
+                                    class="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 sm:ml-3 sm:w-auto"
+                                    @click="createNewRole">
+                                    Create
                                 </button>
                                 <button
                                     class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
                                     @click="closeModal">
                                     Cancel
                                 </button>
-
                             </div>
                         </DialogPanel>
                     </TransitionChild>
@@ -80,11 +70,35 @@
 </template>
 
 <script setup>
+const authStore = useAuthStore();
+
+const name = ref('');
+const description = ref('');
+const errMsg = ref();
+
+const createNewRole = async () => {
+    try {
+        if (!name.value || !description.value) {
+            errMsg.value = 'Please enter both name and description!';
+            return;
+        }
+
+        await authStore.createRoles(name.value, description.value);
+
+        name.value = '';
+        description.value = '';
+        errMsg.value = authStore.errorMessage;
+    } catch (error) {
+        console.error('Error creating new role:', error);
+        errMsg.value = 'An error occurred while creating the role.';
+    }
+}
+
+
 import { ref } from 'vue'
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue'
 
 const open = ref(true)
-const closeModal = () => {
-    open.value = false
-}
+const props = defineProps(['closeModal'])
+const { closeModal } = props;
 </script>
